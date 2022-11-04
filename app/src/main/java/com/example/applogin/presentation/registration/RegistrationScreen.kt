@@ -1,5 +1,4 @@
 package com.example.applogin.presentation.registration
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
@@ -29,28 +28,34 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import com.example.applogin.presentation.components.EventDialog
 import com.example.applogin.presentation.components.SocialMediaButton
 
 @Composable
-fun RegistrationScreen(){
+fun RegistrationScreen(
+    state : RegisterState,
+    onRegister : (String, String, String, String, String) -> Unit,
+    onBack : () -> Unit,
+    onDismissDialog : () -> Unit
+){
     val nameValue = remember{ mutableStateOf( "")}
     val emailValue = remember{ mutableStateOf( "")}
     val phoneValue = remember{ mutableStateOf( "")}
     val passValue = remember{ mutableStateOf( "")}
     val confirmPassValue = remember{ mutableStateOf( "")}
-
     var passwordVisibility by remember{ mutableStateOf( false)}
     var confirmPasswordVisibility by remember{ mutableStateOf( false)}
-
     val focusManager = LocalFocusManager.current
-
     Box(modifier = Modifier.fillMaxWidth()){
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState())){
             Row(verticalAlignment = Alignment.CenterVertically){
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    //llamamos onBack
+                    onBack()
+                }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar al Login",
                     tint = MaterialTheme.colors.primary)
                 }
@@ -134,7 +139,14 @@ fun RegistrationScreen(){
                     keyboardActions = KeyboardActions(
                         onDone = {
                             focusManager.clearFocus()
-                            //TODO{ metodo de registro }
+                            //funcion de confirmar
+                            onRegister(
+                                nameValue.value,
+                                emailValue.value,
+                                phoneValue.value,
+                                passValue.value,
+                                confirmPassValue.value
+                            )
                         }
                     ),
                     imeAction = ImeAction.Done,
@@ -163,8 +175,14 @@ fun RegistrationScreen(){
                 Spacer(modifier = Modifier.height(16.dp)) // espacio
                 RoundedButton(
                     text = "Sign Up",
-                    displayProgressBar = false,
-                    onClick = { //TODO { Register}
+                    displayProgressBar = state.displayProgressBar,
+                    onClick = { onRegister(
+                        nameValue.value,
+                        emailValue.value,
+                        phoneValue.value,
+                        passValue.value,
+                        confirmPassValue.value
+                        )
                      }
                 )//Boton de Sing Up
                 ClickableText(text = buildAnnotatedString {
@@ -179,7 +197,7 @@ fun RegistrationScreen(){
                     }
                 } ,
                     onClick = {
-                        //TODO
+                        onBack()
                     } ) //Already have a Account
             }//Fin de la columna interior
             Spacer(modifier = Modifier.height(16.dp)) // espacio
@@ -227,6 +245,11 @@ fun RegistrationScreen(){
                 )
             }//fin de la columna contenedora de redes sociales
         }//Fin de la columna exterior
+        //colocamos el condicional
+        if(state.errorMessages != null){
+            EventDialog(errorMessage = state.errorMessages , onDismiss = onDismissDialog)
+        }
+
     }//Fin del Box
 }//Fin de la funcion principal
 

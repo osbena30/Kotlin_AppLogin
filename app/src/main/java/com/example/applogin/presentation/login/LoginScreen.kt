@@ -31,16 +31,20 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.applogin.R
+import com.example.applogin.presentation.components.EventDialog
 import com.example.applogin.presentation.components.RoundedButton
 import com.example.applogin.presentation.components.TransparentTextField
-
 @Composable
-fun LoginScreen(){
+fun LoginScreen(
+    state:LoginState,
+    onLogin : ( String , String ) -> Unit,
+    onNavigateToRegister : ( ) -> Unit,
+    onDismissDiolog : ( ) -> Unit
+){
     val emailValue = rememberSaveable { mutableStateOf( "")}
     val passwordValue = rememberSaveable { mutableStateOf( "")}
     var passwordVisibility by remember{ mutableStateOf( false)}
     val focusManager = LocalFocusManager.current
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -125,7 +129,8 @@ fun LoginScreen(){
                                 keyboardActions = KeyboardActions(
                                     onDone = {
                                         focusManager.clearFocus()
-                                        // TODO **accion a seguir del loguin **
+                                        //cargamos los datos a pasar cuando se de click en el icono
+                                        onLogin( emailValue.value, passwordValue.value)
                                     }
                                 ),
                                 //terminacion del foco Done
@@ -170,9 +175,9 @@ fun LoginScreen(){
                             ) {
                         RoundedButton(
                             text = "Login",
-                            displayProgressBar = false,
+                            displayProgressBar = state.displayProgressBar,
                             onClick = {
-                                //TODO {LOGIN]
+                                onLogin( emailValue.value, passwordValue.value)
                             }
                         )// fin del Button
                         ClickableText(
@@ -188,7 +193,7 @@ fun LoginScreen(){
                                 }
                             } // fin del texto
                         ){
-                            //TODO {funcion de registrar}
+                            onNavigateToRegister()
                         } // fin del clickableText
                     } // columna para botones adicionales
                 }//fin de la columna central
@@ -204,7 +209,7 @@ fun LoginScreen(){
                         end.linkTo(surface.end, margin = 36.dp)
                     },
                 backgroundColor = MaterialTheme.colors.primary,
-                onClick = { /*TODO*/ })
+                onClick = {     onNavigateToRegister()  })
                 {
                     Icon(
                         modifier = Modifier.size(72.dp),
@@ -215,5 +220,13 @@ fun LoginScreen(){
                 }//fin del floatingButton
             } // fin del constraintLayout
         }//Fin del segubdo box
+        //validacion de los mensajes de error
+        if( state.errorMessages != null){
+            //compose creado e importado
+            EventDialog(
+                errorMessage = state.errorMessages,
+                onDismiss = onDismissDiolog
+            )
+        }
     }//Fin del primer box
 }//fin de la pantalla

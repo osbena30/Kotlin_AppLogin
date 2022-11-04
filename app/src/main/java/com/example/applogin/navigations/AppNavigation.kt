@@ -5,17 +5,22 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import com.example.applogin.presentation.home.HomeScreen
 import com.example.applogin.presentation.login.LoginScreen
+import com.example.applogin.presentation.login.LoginViewModel
+import com.example.applogin.presentation.registration.RegisterViewModel
 import com.example.applogin.presentation.registration.RegistrationScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
+
 @ExperimentalAnimationApi
 @Composable
+
 fun AppNavigation(){
     val navController = rememberAnimatedNavController()
     BoxWithConstraints() {
@@ -52,9 +57,29 @@ fun NavGraphBuilder.addLogin(
                 targetOffsetX = { 1000 }, animationSpec = tween(500)
             )  }
     ){
-        LoginScreen() //Agregamos la pantalla a mostrar
+        val viewModel = LoginViewModel()
+        if( viewModel.state.value.successLogin){
+            LaunchedEffect(key1 = Unit){
+                navController.navigate(Destinations.HomeScreen.route)
+                //mmodificamos el historial de navegacikon para que no pueda regresar
+                {
+                    popUpTo(Destinations.LoginScreen.route){
+                        inclusive = true
+                    }
+                }
+            }
+        }else {
+            LoginScreen(
+                state = viewModel.state.value,
+                onLogin = viewModel::login,
+                onNavigateToRegister = { navController.navigate(Destinations.RegistrationScreen.route) },
+                onDismissDiolog = viewModel::hideErrorDialog
+            ) //Agregamos la pantalla a mostrar
+        }
+
     }
 }//fin de la funcion navGraphBuilder
+
 @ExperimentalAnimationApi
 fun NavGraphBuilder.addRegister(
     navController: NavHostController
@@ -78,7 +103,13 @@ fun NavGraphBuilder.addRegister(
                 targetOffsetX = { 1000 }, animationSpec = tween(500)
             )  }
     ){
-        RegistrationScreen() //Agregamos la pantalla a mostrar
+        val viewModel = RegisterViewModel()
+        RegistrationScreen(
+            state = viewModel.state.value,
+            onRegister = viewModel::register,
+            onBack = { navController.popBackStack() },
+            onDismissDialog = viewModel::hideErrorDialog
+        ) //Agregamos la pantalla a mostrar
     }
 }//fin de la funcion navGraphBuilder
 @ExperimentalAnimationApi
